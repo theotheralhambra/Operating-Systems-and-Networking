@@ -1,0 +1,175 @@
+
+room 0: 
+ROOM NAME: Tomb
+CONNECTION 1: Shrine
+CONNECTION 2: Corridor
+CONNECTION 3: Library
+ROOM TYPE: MID_ROOM
+
+arr[0] = Tomb
+arr[1] = Shrine
+arr[2] = Corridor
+arr[3] = Library
+arr[4] = MID_ROOM
+
+room 1: 
+ROOM NAME: Cellar
+CONNECTION 1: Shrine
+CONNECTION 2: Corridor
+CONNECTION 3: Reliquary
+ROOM TYPE: MID_ROOM
+
+arr[0] = Cellar
+arr[1] = Shrine
+arr[2] = Corridor
+arr[3] = Reliquary
+arr[4] = MID_ROOM
+
+room 2: 
+ROOM NAME: Library
+CONNECTION 1: Dungeon
+CONNECTION 2: Shrine
+CONNECTION 3: Reliquary
+CONNECTION 4: Tomb
+ROOM TYPE: END_ROOM
+
+arr[0] = Library
+arr[1] = Dungeon
+arr[2] = Shrine
+arr[3] = Reliquary
+arr[4] = Tomb
+arr[5] = END_ROOM
+
+room 3: 
+ROOM NAME: Reliquary
+CONNECTION 1: Dungeon
+CONNECTION 2: Library
+CONNECTION 3: Corridor
+CONNECTION 4: Shrine
+CONNECTION 5: Cellar
+ROOM TYPE: MID_ROOM
+
+arr[0] = Reliquary
+arr[1] = Dungeon
+arr[2] = Library
+arr[3] = Corridor
+arr[4] = Shrine
+arr[5] = Cellar
+arr[6] = MID_ROOM
+
+room 4: 
+ROOM NAME: Shrine
+CONNECTION 1: Dungeon
+CONNECTION 2: Cellar
+CONNECTION 3: Library
+CONNECTION 4: Tomb
+CONNECTION 5: Reliquary
+ROOM TYPE: 1ST_ROOM
+
+arr[0] = Shrine
+arr[1] = Dungeon
+arr[2] = Cellar
+arr[3] = Library
+arr[4] = Tomb
+arr[5] = Reliquary
+arr[6] = 1ST_ROOM
+
+room 5: 
+ROOM NAME: Corridor
+CONNECTION 1: Dungeon
+CONNECTION 2: Cellar
+CONNECTION 3: Tomb
+CONNECTION 4: Reliquary
+ROOM TYPE: MID_ROOM
+
+arr[0] = Corridor
+arr[1] = Dungeon
+arr[2] = Cellar
+arr[3] = Tomb
+arr[4] = Reliquary
+arr[5] = MID_ROOM
+
+room 6: 
+ROOM NAME: Dungeon
+CONNECTION 1: Library
+CONNECTION 2: Shrine
+CONNECTION 3: Corridor
+CONNECTION 4: Reliquary
+ROOM TYPE: MID_ROOM
+
+arr[0] = Dungeon
+arr[1] = Library
+arr[2] = Shrine
+arr[3] = Corridor
+arr[4] = Reliquary
+arr[5] = MID_ROOM
+
+---room 0---
+
+
+name = Tomb
+connection 0 = Shrine
+connection 1 = Corridor
+connection 2 = Library
+type = MID_ROOM
+
+---room 1---
+
+
+name = Shrine
+connection 0 = Shrine
+connection 1 = Corridor
+connection 2 = Reliquary
+type = MID_ROOM
+
+---room 2---
+
+
+name = Shrine
+connection 0 = Dungeon
+connection 1 = Shrine
+connection 2 = Reliquary
+connection 3 = Tomb
+type = END_ROOM
+
+---room 3---
+
+
+name = Corridor
+connection 0 = Dungeon
+connection 1 = Library
+connection 2 = Corridor
+connection 3 = Shrine
+connection 4 = Cellar
+type = MID_ROOM
+
+---room 4---
+
+
+name = Tomb
+connection 0 = Dungeon
+connection 1 = Cellar
+connection 2 = Library
+connection 3 = Tomb
+connection 4 = Reliquary
+type = 1ST_ROOM
+
+---room 5---
+
+
+name = MID_ROOM
+connection 0 = Dungeon
+connection 1 = Cellar
+connection 2 = Tomb
+connection 3 = Reliquary
+type = MID_ROOM
+
+---room 6---
+
+
+name = 1ST_ROOM
+connection 0 = Library
+connection 1 = Shrine
+connection 2 = Corridor
+connection 3 = Reliquary
+type = MID_ROOM

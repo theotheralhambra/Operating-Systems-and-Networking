@@ -1,0 +1,133 @@
+#!/bin/bash
+#Rick Menzel - menzelr@oregonstate.edu
+#Assignment01 - CS344
+trap 'rm -f temp*' EXIT	#handle interrupts -- clean before exit
+#func to print error msg for bad call invocation
+usage(){
+	echo "./stats {-rows|-cols} [file]" >&2
+}
+#func to print error msg for bad filename and/or missing file
+invalid(){
+	echo -e "./stats: cannot read $FILENAME" >&2
+}
+#func to print error msg for unreadbale file
+unreadable(){
+	echo -e "./stats: cannot read $FILENAME" >&2 
+}
+#func to print error msg for empty file
+emptyFile(){
+	echo -e "./stats: empty file $FILENAME" >&2
+}
+#function to print results for column option
+printHelper(){
+		echo "Averages:"										#header
+		cat "$meanTemp$$" | tr '\n' '\t'		#print means converting newlines in file to tabs
+		echo -e "\nMedians:"								#header
+		cat "$medianTemp$$" | tr '\n' '\t'	#print medians converting newlines in file to tabs
+		echo ""															#make it pretty
+}
+#function to process a file in row format -- prints results
+processFile(){
+	tempfile="tempSortFile"
+	medianTemp="tempMedianFile"
+	meanTemp="tempMeanFile"
+	if [ $MODE == "r" ]; then echo "Average	Median"; fi									#print header if row option selected
+	while read currLine; do
+		sum=0																															#adding container
+		count=0																														#num of items in row
+		mean=0																														#average
+		median=0																													#median val
+		midPtr=0																													#middle item in list
+		for i in $currLine; do																						#process line
+			((sum+=$i))																												#adjust sum
+			((count+=1))																											#increment count
+			echo $i >> "$tempfile$$" 																					#append to sort file
+		done
+		midPtr=$(( 1 + count / 2 ))																				#calculate mid point
+		median=$( sort -n "$tempfile$$" | head -n "$midPtr" | tail -n 1 )	#get median value
+		mean=$(( ( $sum + ( $count / 2 ) ) / $count))											#get mean with required rounding
+		if [ $MODE == "r" ]; then echo "$mean	$median";										#print vals if row option selected
+		else																															#otherwise work in col mode
+			echo $median >> "$medianTemp$$"																		#get median value, put in file
+			echo $mean >> "$meanTemp$$"																				#get mean with required rounding, put in file
+		fi																								
+		rm -f "$tempfile$$"																								#cleanup sort file
+	done < $FILENAME
+	if [ $MODE == "c" ]; then																						#if column mode selected
+		printHelper																													#print results
+		rm -f "$medianTemp$$"																								#cleanup
+		rm -f "$meanTemp$$"
+	fi
+}
+#function to convert columns to rows
+convertFile(){
+	count=0																							
+	tempFile="tempRowFile"
+	read topRow < $FILENAME																#get the top row of the file
+	for i in $topRow; do																	#find out how many columns are in the file
+		((count+=1))																				#inc count
+	done
+	for (( j=1; j<=$count; j++ )); do											#separate the columns
+		row=$(cut -d $'\t' -f $j $FILENAME | tr '\n' '\t')	#convert each column to a row (cut into fields on tab delim, convert newline to tabs)
+		echo $row >> "$tempFile$$"													#put the rows into a file			
+	done
+	FILENAME="$tempFile$$"
+	processFile																						#do work
+	rm -f "$tempFile$$"																		#clean up
+}
+if [ $# == 0 ]; then																		#show usage if called w/o args
+	usage
+	exit 1
+fi
+#switch to handle command line arguments
+while [ "$1" != "" ]; do
+	case $1 in
+		-c* | -col | --col | -cols | --cols	)	shift					#shift arguments left
+																					FILENAME=$1		#get filename
+																					MODE=c				#set mode
+																					;;
+		-r* | -row | --row | -rows | --rows	)	shift					#shift arguments left	
+																					FILENAME=$1		#get filename
+																					MODE=r				#set mode
+																					;;
+		-h* | -help | --help	)								usage					#show usage on request
+																					exit
+																					;;
+		*	)																		usage					#incorrect call -> print usage
+																					exit 1
+	esac
+	shift																									#shift again to make $# == 0 if called correctly !IMPORTANT
+done
+#decide what to do based on call structure
+if [ "$FILENAME" == "" ] && [ "$MODE" == "c" ]; then			#read cols from stdin
+	tempInFile="tempInputFile"
+	cat > "$tempInFile$$"						#read to tempfile
+	FILENAME="$tempInFile$$"
+	convertFile											#do work
+	rm "$tempInFile$$"							#clean up
+	exit
+elif [ "$FILENAME" == "" ] && [ "$MODE" == "r" ]; then		#read rows from stdin
+	tempInFile="tempInputFile"
+	cat > "$tempInFile$$"						#read to tempfile
+	FILENAME="$tempInFile$$"
+	processFile											#do work
+	rm "$tempInFile$$"							#clean up
+	exit
+elif ! [ -f $FILENAME ]; then			#bad filename
+	invalid
+	exit 1
+elif ! [ -r $FILENAME ]; then			#file not readable
+	unreadable
+	exit 1
+elif [ $(wc -c < "$FILENAME") == 0 ]; then	#file is empty
+	emptyFile
+	exit
+elif [ $MODE == "c" ]; then				#work on columns
+	convertFile
+	exit
+elif [ $MODE == "r" ]; then				#work on rows
+	processFile
+	exit
+else															#something else wierd happened
+	exit 1
+fi

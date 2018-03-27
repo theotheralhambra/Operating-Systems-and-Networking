@@ -1,0 +1,4 @@
+to do:
+
+unfuck newlines/spacing in server
+figure out hostname bs

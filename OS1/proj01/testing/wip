@@ -1,0 +1,114 @@
+#!/bin/bash
+#test for assignment 01
+FILENAME=""
+#func to print error msg for bad call invocation
+usage(){
+	#error msg
+	echo "./stats {-rows|-cols} [file]"
+}
+#func to print error msg for bad filename and/or missing file
+invalid(){
+	#error msg
+	echo "./stats: cannot read $FILENAME"
+}
+#function to print results for column option
+printHelper(){
+		echo "Averages:"										#header
+		cat "$meanTemp$$" | tr '\n' '\t'		#print means converting newlines in file to tabs
+		echo -e "\nMedians:"								#header
+		cat "$medianTemp$$" | tr '\n' '\t'	#print medians converting newlines in file to tabs
+		echo ""															#make it pretty
+}
+#function to process a file in row format -- prints results
+processFile(){
+	tempfile="tempSortFile"
+	medianTemp="medianTempFile"
+	meanTemp="meanTempFile"
+	if [ $MODE == "r" ]; then echo "Average	Median"; fi							#print header if row option selected
+	while read currLine; do
+		sum=0												#adding container
+		count=0											#num of items in row
+		mean=0											#average
+		median=0										#median val
+		midPtr=0										#middle item in list
+		for i in $currLine; do																				#process line
+			((sum+=$i))																										#adjust sum
+			((count+=1))																									#increment count
+			echo $i >> $tempfile 																					#append to sort file
+		done
+		midPtr=$(( 1 + count / 2 ))																		#calculate mid point
+		median=$( sort -n $tempfile | head -n "$midPtr" | tail -n 1 )	#get median value
+		mean=$(( ( $sum + ( $count / 2 ) ) / $count))									#get mean with required rounding
+		if [ $MODE == "r" ]; then echo "$mean	$median";								#print vals if row option selected
+		else
+			echo $median >> "$medianTemp$$"																#get median value
+			echo $mean >> "$meanTemp$$"																		#get mean with required rounding
+		fi																								
+		rm $tempfile																									#cleanup sort file
+	done < $FILENAME
+	if [ $MODE == "c" ]; then																				#if column mode selected
+		printHelper																											#print results
+		rm "$medianTemp$$"																							#cleanup
+		rm "$meanTemp$$"
+	fi
+}
+#function to convert columns to rows
+convertFile(){
+	count=0
+	tempFile="tempRowFile"
+	read topRow < $FILENAME							#get the top row of the file
+	for i in $topRow; do								#find out how many columns are in the file
+		((count+=1))
+	done
+	for (( j=1; j<=$count; j++ )); do											#separate the columns
+		row=$(cut -d $'\t' -f $j test_file | tr '\n' '\t')	#convert each colum to a row
+		echo $row >> $tempFile															#put the rows into a file			
+	done
+	FILENAME=$tempFile
+	processFile
+	rm $tempFile
+}
+#switch to handle command line arguments
+while [ "$1" != "" ]; do
+	case $1 in
+		-c | -col | --col | -cols | --cols	)	shift					#shift arguments left
+																					FILENAME=$1		#get filename
+																					MODE=c				#set mode
+																					;;
+		-r | -row | --row | -rows | --rows	)	shift					#shift arguments left	
+																					FILENAME=$1		#get filename
+																					MODE=r				#set mode
+																					;;
+		-h | -help | --help	)									usage
+																					exit
+																					;;
+		*	)																		usage					#incorrect call -> print usage
+																					exit 1
+	esac
+	shift																									#shift again to make $# == 0 if called correctly !IMPORTANT
+done
+#decide what to do based on call structure
+if [ "$FILENAME" == "" ] && [ "$MODE" == "c" ]; then			#read cols from stdin
+	tempInFile="tempInputFile"
+	cat > "$tempInFile$$"
+	FILENAME="$tempInFile$$"
+	convertFile
+	rm "$tempInFile$$"
+	exit
+elif [ "$FILENAME" == "" ] && [ "$MODE" == "r" ]; then		#read rows from stdin
+	tempInFile="tempInputFile"
+	cat > "$tempInFile$$"
+	FILENAME="$tempInFile$$"
+	processFile
+	rm "$tempInFile$$"
+	exit
+elif ! [ -f $FILENAME ]; then			#bad filename
+	invalid
+	exit 2
+elif [ $MODE == "c" ]; then			#work on columns
+	convertFile
+	exit
+elif [ $MODE == "r" ]; then			#work on rows
+	processFile
+	exit
+fi
